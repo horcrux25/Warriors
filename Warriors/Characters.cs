@@ -44,6 +44,11 @@ namespace Warriors
             return false;
         }
 
+        public virtual bool SlowAttack()
+        {
+            return false;
+        }
+
         public struct DOTResult
         {
             public string DotType;
