@@ -26,6 +26,7 @@ namespace Warriors
 
         public static void Equip(Characters char1, Characters char2)
         {
+            //this is my comment
             bool repeatEquip = true;
 
             while (repeatEquip == true)
