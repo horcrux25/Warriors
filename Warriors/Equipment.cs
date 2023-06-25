@@ -37,7 +37,7 @@ namespace Warriors
 
                 while (true)
                 {
-                    Console.Write("Select character to upgrade. 1 or 2:");
+                    Console.Write("Select character to upgrade. 1 or 2: ");
                     try
                     {
                         int UpgradeChar = int.Parse(Console.ReadLine());
