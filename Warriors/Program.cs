@@ -242,7 +242,7 @@ internal class Program
         Console.SetCursorPosition(0, Console.CursorTop - (CharacterCount + 7));
         for (int i = 0; i < (CharacterCount + 7); i++)
         {
-            Console.Write(new string(' ', Console.BufferWidth) + "\n");
+            Console.Write(new string(' ', Console.BufferWidth));
         }
         Console.SetCursorPosition(0, Console.CursorTop - (CharacterCount + 7));
     }
