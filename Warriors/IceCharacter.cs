@@ -17,8 +17,9 @@ namespace Warriors
             double defenseMax = 0,
             string element = "Ice",
             double speed = 0,
-            int FreezeChance = 0)
-            : base(name, health, attackMax, defenseMax, element, speed)
+            int FreezeChance = 0,
+            string skill = "Freeze")
+            : base(name, health, attackMax, defenseMax, element, speed, FreezeChance, skill)
         {
             this.FreezeChance = FreezeChance;
         }
@@ -28,7 +29,7 @@ namespace Warriors
             Random rnd = new Random();
             int rndFreeze = rnd.Next(1,100);
 
-            if (rndFreeze <= this.FreezeChance)
+            if (rndFreeze <= FreezeChance)
             {
                 return true;
             }

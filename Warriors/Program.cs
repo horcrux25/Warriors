@@ -21,13 +21,13 @@ internal class Program
         {
             List<Characters> PlayersCopy = new();
 
-            ImaginaryCharacters Yukong = new ImaginaryCharacters("Yukong", 1000, 150, 50, "Imaginary", 100, 65);
-            IceCharacter March7th = new IceCharacter("March 7th", 1000, 150, 50, "Ice", 100, 40);
-            DOTCharacter DanHeng = new DOTCharacter("Dan Heng", 1000, 200, 50, "Wind", 100, 40);
-            DOTCharacter Hook = new DOTCharacter("Hook", 1000, 180, 60, "Fire", 120, 40);
-            DOTCharacter Natasha = new DOTCharacter("Natasha", 1000, 150, 70, "Physical", 100, 40);
-            DOTCharacter Serval = new DOTCharacter("Serval", 1000, 190, 55, "Lightning", 100, 40);
-            QuantumCharacters Qingque = new QuantumCharacters("Qingque", 1000, 150, 55, "Quantum", 100, 40);
+            ImaginaryCharacters Yukong = new ImaginaryCharacters("Yukong", 1000, 150, 50, "Imaginary", 110, 65, "Slow");
+            IceCharacter March7th = new IceCharacter("March 7th", 1000, 150, 60, "Ice", 100, 50, "Freeze");
+            DOTCharacter DanHeng = new DOTCharacter("Dan Heng", 1000, 200, 45, "Wind", 100, 40, "Slow");
+            DOTCharacter Hook = new DOTCharacter("Hook", 1000, 175, 50, "Fire", 100, 50, "Burn");
+            DOTCharacter Natasha = new DOTCharacter("Natasha", 1250, 100, 100, "Physical", 100, 40,"Heal");
+            DOTCharacter Serval = new DOTCharacter("Serval", 1000, 180, 45, "Lightning", 110, 40,"Shock");
+            QuantumCharacters Qingque = new QuantumCharacters("Qingque", 1000, 150, 60, "Quantum", 120, 40,"Slow");
 
             Players.Clear();
             PlayersCopy.Clear();
@@ -179,6 +179,34 @@ internal class Program
             if (EquipBuyFlag)
             {
                 Equipment.Equip(CharacterPlay[0], CharacterPlay[1]);
+
+                Console.Clear();
+                string ViewPlayerStat = "";
+                bool StatViewFlag = false;
+                Console.Write("Do you want to view characters' current stats before going to battle? Y or N: ");
+
+                while (true)
+                {
+                    ViewPlayerStat = Console.ReadLine();
+
+                    if (ViewPlayerStat.ToLower() == "y" ||
+                        ViewPlayerStat.ToLower() == "n")
+                    {
+                        StatViewFlag = ViewPlayerStat.ToLower() == "y" ? true : false;
+                        break;
+                    }
+                    else
+                    {
+                        Console.Clear();
+                        Console.Write("\nInvalid. Do you want to view characters' current stats before going to battle? Y or N: ");
+                    }
+                }
+
+                if (StatViewFlag)
+                {
+                    CharacterListsProcess(CharacterPlay);
+                }
+
             }
 
             Fight.Battle(CharacterPlay[0], CharacterPlay[1]);
@@ -224,18 +252,18 @@ internal class Program
         Console.ForegroundColor = ConsoleColor.Cyan; 
         Console.WriteLine("Characters Selection:");
         Console.ResetColor(); Console.BackgroundColor = ConsoleColor.DarkBlue;
-        Console.WriteLine("    Name        Health   Attack   Defense  Element   Speed ");
+        Console.WriteLine("    Name       Health  Attack  Defense  Element    Speed  Skill    Skill-Chance");
         Console.ResetColor(); 
 
         CharacterListings.ForEach(x =>
         {
             Console.Write($"{CharacterListings.IndexOf(x) + 1} - " +
-                    $"{x.Name,-11} {x.Health,-9}{x.AttackMax,-9}{x.DefenseMax,-9}");
+                    $"{x.Name,-10} {x.Health,-8}{x.AttackMax,-8}{x.DefenseMax,-9}");
 
             ElementColors.ChangeElementColor(x.Element);
-            Console.Write($"{x.Element,-10}");
+            Console.Write($"{x.Element,-11}");
             Console.ResetColor();
-            Console.WriteLine($"{x.Speed,-7}");
+            Console.WriteLine($"{x.Speed,-7}{x.Skill,-9}{x.Chance}");
         } );
         Console.WriteLine();
         

@@ -15,10 +15,11 @@ namespace Warriors
             double health = 0,
             double attackMax = 0,
             double defenseMax = 0,
-            string element = "Wind",
+            string element = "",
             double speed = 0,
-            int DOTChance = 0)
-            : base(name, health, attackMax, defenseMax, element, speed)
+            int DOTChance = 0,
+            string skill = "")
+            : base(name, health, attackMax, defenseMax, element, speed, DOTChance, skill)
         {
             this.DOTChance = DOTChance;
         }
@@ -28,7 +29,7 @@ namespace Warriors
             Random rnd = new Random();
             int rndDOT = rnd.Next(1, 100);
 
-            if (rndDOT <= this.DOTChance)
+            if (rndDOT <= DOTChance)
             {
                 return true;
             }

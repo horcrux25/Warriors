@@ -28,12 +28,13 @@ namespace Warriors
         {
             //this is my comment
             bool repeatEquip = true;
+            int characterCount = 0;
 
             while (repeatEquip == true)
             {
                 Console.Clear();
                 List<Characters> CharacterListings = new List<Characters> { char1, char2 };
-                SelectedCharEquipDisplay(CharacterListings);
+                SelectedCharEquipDisplay(CharacterListings, characterCount);
 
                 while (true)
                 {
@@ -50,10 +51,12 @@ namespace Warriors
                             if (UpgradeChar == 1)
                             {
                                 characterToUpgrade.Add(char1);
+                                characterCount = 1;
                             }
                             else
                             {
                                 characterToUpgrade.Add(char2);
+                                characterCount = 2;
                             }
 
                             EquipmentGroup EquipForChar = new EquipmentGroup()
@@ -76,16 +79,16 @@ namespace Warriors
                             {
                                 if ((TotalBuy.Any(x => EquipForChar.Money >= x)) == true)
                                 {
-                                    SelectedCharEquipDisplay(characterToUpgrade);
+                                    SelectedCharEquipDisplay(characterToUpgrade, characterCount);
                                     EquipForChar = SelectEquip(EquipForChar, TotalBuy);
-                                    EquipForChar = BuyEquipCalculate(EquipForChar, char1, TotalBuy);
+                                    EquipForChar = BuyEquipCalculate(EquipForChar, characterToUpgrade[0], TotalBuy);
                                     Console.Clear();
                                 }
                                 else
                                 {
-                                    SelectedCharEquipDisplay(characterToUpgrade);
+                                    SelectedCharEquipDisplay(characterToUpgrade, characterCount);
                                     EquipForChar = SelectEquip(EquipForChar, TotalBuy);
-                                    EquipForChar = BuyEquipCalculate(EquipForChar, char1, TotalBuy);
+                                    EquipForChar = BuyEquipCalculate(EquipForChar, characterToUpgrade[0], TotalBuy);
                                     break;
                                 }
                             }
@@ -118,24 +121,33 @@ namespace Warriors
 
                                 TotalBuy = new() { 35, 35, 50, 40 };
 
+                                switch (characterCount)
+                                {
+                                    case 1: characterCount = 2; break;
+                                    case 2: characterCount = 1; break;
+                                    default: characterCount = 0; break;
+                                }
+
                                 while (true)
                                 {
                                     if ((TotalBuy.Any(x => EquipForChar.Money >= x)) == true)
                                     //if (EquipForChar.Money > 35)
                                     {
-                                        SelectedCharEquipDisplay(characterToUpgrade);
+                                        SelectedCharEquipDisplay(characterToUpgrade, characterCount);
+
                                         EquipForChar = SelectEquip(EquipForChar, TotalBuy);
-                                        EquipForChar = BuyEquipCalculate(EquipForChar, char1, TotalBuy);
+                                        EquipForChar = BuyEquipCalculate(EquipForChar, characterToUpgrade[0], TotalBuy);
                                         Console.Clear();
                                     }
                                     else
                                     {
-                                        SelectedCharEquipDisplay(characterToUpgrade);
+                                        SelectedCharEquipDisplay(characterToUpgrade, characterCount);
                                         EquipForChar = SelectEquip(EquipForChar, TotalBuy);
-                                        EquipForChar = BuyEquipCalculate(EquipForChar, char1, TotalBuy);
+                                        EquipForChar = BuyEquipCalculate(EquipForChar, characterToUpgrade[0], TotalBuy);
                                         break;
                                     }
                                 }
+                                Console.ReadLine();
 
                             }
 
@@ -146,6 +158,7 @@ namespace Warriors
                         {
                             Console.WriteLine("Invalid.\nPress any button to select again");
                             Console.ReadLine();
+                            ClearLastLines(4);
                         }
                     }
                     catch (Exception ex)
@@ -153,13 +166,14 @@ namespace Warriors
                         Console.WriteLine($"{ex.Message}");
                         Console.WriteLine("Press any button to select again");
                         Console.ReadLine();
+                        ClearLastLines(4);
                     }
                 }
             }
 
         }
 
-        public static void SelectedCharEquipDisplay(List<Characters> CharacterListings)
+        public static void SelectedCharEquipDisplay(List<Characters> CharacterListings, int Count)
         {
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine("Selected Characters: ");
@@ -171,14 +185,30 @@ namespace Warriors
             Console.SetCursorPosition(0, Console.CursorTop);
             CharacterListings.ForEach(x =>
             {
-                Console.Write($"Player {CharacterListings.IndexOf(x) + 1} - " +
-                    $"{x.Name,-11} {x.Health,-9}{x.AttackMax,-9}{x.DefenseMax,-9}");
+                if (Count == 0)
+                {
+                    Console.Write($"Player {CharacterListings.IndexOf(x) + 1} - ");
+                }
+                else
+                {
+                    Console.Write($"Player {Count} - ");
+                }
+                Console.Write($"{x.Name,-11} {x.Health,-9}{x.AttackMax,-9}{x.DefenseMax,-9}");
                 ElementColors.ChangeElementColor(x.Element);
                 Console.Write($"{x.Element,-10}");
                 Console.ResetColor();
                 Console.WriteLine($"{x.Speed,-7}");
             });
-            Console.WriteLine();
+
+            if (Count == 0)
+            {
+                Console.WriteLine();
+            }
+            else
+            {
+                Console.WriteLine("------------------------------------------------------------------");
+            }
+                
         }
 
         public static EquipmentGroup SelectEquip(EquipmentGroup EquipData, List<double> TotalBuy)
@@ -186,12 +216,17 @@ namespace Warriors
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine($"Equipment Selection:           Remaining Balance: {EquipData.Money}");
             Console.ResetColor(); Console.BackgroundColor = ConsoleColor.DarkBlue;
-            Console.WriteLine("    Equipment     Attribute       Price  Status");
+            Console.WriteLine("    Equipment      Attribute       Price   Status");
             Console.ResetColor();
-            Console.WriteLine($"1 - Weapon:      +30 to Attack     35    {EquipData.Weapon}");
-            Console.WriteLine($"2 - Armor:       +30 to Defense    35    {EquipData.Armor}");
-            Console.WriteLine($"3 - Potion:     +150 to Health     50    {EquipData.Potion}");
-            Console.WriteLine($"4 - Speed Ring:  +10 to Speed      40    {EquipData.SpeedRing}");
+            Console.Write("1 - Potion:      "); Console.ForegroundColor = ConsoleColor.Green; Console.Write("+150");
+            Console.ResetColor(); Console.WriteLine($" to Health     50     {EquipData.Potion}");
+            Console.Write("2 - Weapon:       "); Console.ForegroundColor = ConsoleColor.Green; Console.Write("+30");
+            Console.ResetColor(); Console.WriteLine($" to Attack     35     {EquipData.Weapon}");
+            Console.Write("3 - Armor:        "); Console.ForegroundColor = ConsoleColor.Green; Console.Write("+30");
+            Console.ResetColor(); Console.WriteLine($" to Defense    35     {EquipData.Armor}");
+            Console.Write("4 - Speed Ring:   "); Console.ForegroundColor = ConsoleColor.Green; Console.Write("+10");
+            Console.ResetColor(); Console.WriteLine($" to Speed      40     {EquipData.SpeedRing}");
+
             Console.WriteLine();
 
             //if (EquipData.Money > 35)
@@ -206,32 +241,33 @@ namespace Warriors
 
                         if (BuyItemSelect > 0 && BuyItemSelect < 5)
                         {
-                            if ((BuyItemSelect == 1 && String.Equals(EquipData.Weapon,"Bought")) ||
-                                (BuyItemSelect == 2 && String.Equals(EquipData.Armor,"Bought")) ||
-                                (BuyItemSelect == 3 && String.Equals(EquipData.Potion,"Bought")) ||
+                            if ((BuyItemSelect == 1 && String.Equals(EquipData.Potion, "Bought")) ||
+                                (BuyItemSelect == 2 && String.Equals(EquipData.Weapon,"Bought")) ||
+                                (BuyItemSelect == 3 && String.Equals(EquipData.Armor,"Bought")) ||
                                 (BuyItemSelect == 4 && String.Equals(EquipData.SpeedRing,"Bought")))
                             {
                                 Console.WriteLine("Already bought.\nPress any button to select again");
                                 Console.ReadLine();
+                                ClearLastLines(4);
                             }
                             else
                             {
                                 switch (BuyItemSelect)
                                 {
                                     case 1:
+                                        EquipData.Potion = "Bought";
+                                        EquipData.Price = 50;
+                                        EquipData.HealthUp = 150;
+                                        break;
+                                    case 2:
                                         EquipData.Weapon = "Bought";
                                         EquipData.Price = 35;
                                         EquipData.AttackUp = 30;
                                         break;
-                                    case 2:
+                                    case 3:
                                         EquipData.Armor = "Bought";
                                         EquipData.Price = 35;
                                         EquipData.DefenseUp = 30;
-                                        break;
-                                    case 3:
-                                        EquipData.Potion = "Bought";
-                                        EquipData.Price = 50;
-                                        EquipData.HealthUp = 100;
                                         break;
                                     case 4:
                                         EquipData.SpeedRing = "Bought";
@@ -246,6 +282,7 @@ namespace Warriors
                         {
                             Console.WriteLine("Invalid.\nPress any button to select again");
                             Console.ReadLine();
+                            ClearLastLines(4);
                         }
                     }
                     catch (Exception a)
@@ -253,6 +290,7 @@ namespace Warriors
                         Console.WriteLine($"{a.Message}");
                         Console.WriteLine("Press any button to select again");
                         Console.ReadLine();
+                        ClearLastLines(4);
                     }
                 }
             }
@@ -278,6 +316,17 @@ namespace Warriors
             EquipData.SpeedUp = 0;
 
             return EquipData;
+        }
+
+        public static void ClearLastLines(int LineCount)
+        {
+            (int LeftCursor, int TopCursor) = Console.GetCursorPosition();
+            Console.SetCursorPosition(0, TopCursor - (LineCount));
+            for (int i = 0; i < (LineCount); i++)
+            {
+                Console.Write(new string(' ', Console.BufferWidth));
+            }
+            Console.SetCursorPosition(0, TopCursor - (LineCount));
         }
     }
 }

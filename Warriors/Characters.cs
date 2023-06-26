@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,8 +15,10 @@ namespace Warriors
         public double DefenseMax { get; set; }
         public string Element { get; set; }
         public double Speed { get; set; }
+        public int Chance { get; set; }
+        public string Skill { get; set; }
 
-        public Characters(string name, double health, double attackMax, double defenseMax, string element, double speed)
+        public Characters(string name, double health, double attackMax, double defenseMax, string element, double speed, int chance, string skill)
         {
             Name = name;
             Health = health;
@@ -23,20 +26,24 @@ namespace Warriors
             DefenseMax = defenseMax;
             Element = element;
             Speed = speed;
+            Chance = chance;
+            Skill = skill;
         }
 
         public double Attack()
         {
-            Random rnd = new Random();
+            //Random rnd = new Random();
 
-            return rnd.Next(100, (int)AttackMax);
+            //return rnd.Next(100, (int)AttackMax);
+            return AttackMax;
         }
 
         public virtual double Block()
         {
-            Random rnd = new Random();
+            //Random rnd = new Random();
 
-            return rnd.Next(1, (int)DefenseMax);
+            //return rnd.Next(1, (int)DefenseMax);
+            return DefenseMax;
         }
 
         public virtual bool FreezeAttack()

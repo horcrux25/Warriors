@@ -17,8 +17,9 @@ namespace Warriors
             double defenseMax = 0,
             string element = "Imaginary",
             double speed = 0,
-            int SlowChance = 0)
-            : base(name, health, attackMax, defenseMax, element, speed)
+            int SlowChance = 0,
+            string skill = "Slow")
+            : base(name, health, attackMax, defenseMax, element, speed, SlowChance, skill)
         {
             this.SlowChance = SlowChance;
         }
@@ -28,7 +29,7 @@ namespace Warriors
             Random rnd = new Random();
             int rndSlow = rnd.Next(1, 100);
 
-            if (rndSlow <= this.SlowChance)
+            if (rndSlow <= SlowChance)
             {
                 return true;
             }

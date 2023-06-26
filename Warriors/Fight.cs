@@ -38,9 +38,17 @@ namespace Warriors
             public string turnBase;
         }
 
+        static int SkillChanceChar1 = 0;
+        static int SkillChanceChar2 = 0;
+        static bool SkillUseChar1 = false;
+        static bool SkillUseChar2 = false;
+        //static bool Char1Slow = false;
+        //static bool Char2Slow = false;
+
         public static void Battle(Characters char1, Characters char2)
         {
-            Console.WriteLine("\nBattle start!\nPress ENTER to display every turn,\notherwise, press any key to end fight immediately.\n");
+            Console.WriteLine("\nBattle start!\nPress ENTER to display every turn,\notherwise, press any key to end fight immediately.");
+            Console.WriteLine("For auto-battle, skills will be casted automatically.\n");
 
             List<Characters> CharacterToPlay = new List<Characters> { char1, char2 };
 
@@ -49,6 +57,9 @@ namespace Warriors
             double OriginalChar2Speed = char2.Speed;
             int turnCounter = 1;
             ConsoleKeyInfo keyPress = Console.ReadKey();
+            bool TheEnd = false;
+            bool Char1TurnEnd = false;
+            bool Char2TurnEnd = false;
 
             BattleInfo battleInfo = new()
             {
@@ -62,13 +73,7 @@ namespace Warriors
                 DOTEnemyType = ""
             };
 
-            (int Left, int Top) = Console.GetCursorPosition();
-            if (Left != 0)
-            {
-                Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
-            }
-
-            while (true)
+            while (TheEnd == false)
             {
                 while (keyPress.Key.Equals(ConsoleKey.Enter))
                 {
@@ -78,7 +83,13 @@ namespace Warriors
                     }
                     break;
                 }
+
                 Console.ForegroundColor = ConsoleColor.Blue;
+                (int Left, int Top) = Console.GetCursorPosition();
+                if (Left != 0)
+                {
+                    Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                }
                 Console.WriteLine($"Turn {turnCounter}"); turnCounter++;
                 Console.ResetColor();
 
@@ -88,80 +99,191 @@ namespace Warriors
                     break;
                 }
 
-                battleInfo.char1 = CharacterToPlay[0];
-                battleInfo.char2 = CharacterToPlay[1];
-                battleInfo.turnBase = "Char1";
-
-                if (CharacterToPlay[0].Speed >= 100)
+                while ((CharacterToPlay[0].Speed >= 100 ||
+                        CharacterToPlay[1].Speed >= 100))
                 {
-                    BattleResult battleResult1 = Result(battleInfo);
+                    battleInfo.char1 = CharacterToPlay[0];
+                    battleInfo.char2 = CharacterToPlay[1];
+                    battleInfo.turnBase = "Char1";
 
-                    if (battleResult1.battleOutcome == "Battle End")
+                    if (CharacterToPlay[0].Speed >= 100)
                     {
-                        Console.WriteLine("\nThe end");
+                        if (keyPress.Key.Equals(ConsoleKey.Enter))
+                        {
+                            if (SkillChanceChar1 >= 2 && battleInfo.frozenflag1 == false)
+                            {
+                                string SkillUser = "";
+
+                                while (true)
+                                {
+                                    Console.Write($"{CharacterToPlay[0].Name} has 2 attack stacks. Use skill? Y or N: ");
+                                    SkillUser = Console.ReadLine();
+                                    if (SkillUser.ToLower() == "n" ||
+                                        SkillUser.ToLower() == "y")
+                                    {
+                                        SkillChanceChar1 = SkillUser.ToLower() == "y" ? 0 : 3;
+                                        SkillUseChar1 = SkillUser.ToLower() == "y" ? true : false;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        ClearLastLines(1);
+                                        Console.Write("Invalid. Please select again. ");
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (SkillChanceChar1 >= 2)
+                            {
+                                SkillChanceChar1 = 0;
+                                SkillUseChar1 = true;
+                            }
+                        }
+
+                        BattleResult battleResult1 = Result(battleInfo);
+
+                        SkillChanceChar1 = SkillUseChar1 == true ? 0 : ++SkillChanceChar1;
+                        SkillUseChar1 = SkillUseChar1 == true ? false : false;
+
+                        if (battleResult1.battleOutcome == "Battle End")
+                        {
+                            Console.WriteLine("\nThe end");
+                            CharacterToPlay[0].Speed = 0;
+                            CharacterToPlay[1].Speed = 0;
+                            TheEnd = true;
+                            break;
+                        }
+                        Console.Write("\n");
+
+                        battleInfo.frozenflag1 = battleResult1.frozenflagChar1Outcome;
+                        battleInfo.frozenflag2 = battleResult1.frozenflagChar2Outcome;
+                        battleInfo.prevFrozenflag1 = battleResult1.prevFrozenflagChar1Outcome;
+                        battleInfo.prevFrozenflag2 = battleResult1.prevFrozenflagChar2Outcome;
+                        battleInfo.DOTEnemyDamage = battleResult1.DOTOutcome;
+                        battleInfo.DOTEnemyType = battleResult1.DOTTypeOutcome;
+                        battleInfo.turnBase = "Char2";
+
+                        CharacterToPlay[1].Speed = CharacterToPlay[1].Speed - battleResult1.speedOutcome;
+                        CharacterToPlay[0].Speed = CharacterToPlay[0].Speed - 100;
+
+                        if (CharacterToPlay[0].Speed < 100)
+                        {
+                            Char1TurnEnd = true;
+                        }
+                    }
+                    else
+                    {
+                        if (Char1TurnEnd == false)
+                        {
+                            Console.Write($"{CharacterToPlay[0].Name} is");
+                            ElementColors.ChangeElementColor(CharacterToPlay[1].Element);
+                            Console.Write($" slowed ");
+                            Console.ResetColor();
+                            Console.WriteLine("can't attack in current turn.\n");
+                            Char1TurnEnd = true;
+                        }
+                    }
+
+                    while (keyPress.Key.Equals(ConsoleKey.Enter))
+                    {
+                        keyPress = Console.ReadKey();
                         break;
                     }
-                    Console.Write("\n");
 
-                    CharacterToPlay[0].Speed = CharacterToPlay[0].Speed - 100 + OriginalChar1Speed;
-                    CharacterToPlay[1].Speed = CharacterToPlay[1].Speed - battleResult1.speedOutcome;
+                    battleInfo.char1 = CharacterToPlay[1];
+                    battleInfo.char2 = CharacterToPlay[0];
 
-                    battleInfo.frozenflag1 = battleResult1.frozenflagChar1Outcome;
-                    battleInfo.frozenflag2 = battleResult1.frozenflagChar2Outcome;
-                    battleInfo.prevFrozenflag1 = battleResult1.prevFrozenflagChar1Outcome;
-                    battleInfo.prevFrozenflag2 = battleResult1.prevFrozenflagChar2Outcome;
-                    battleInfo.DOTEnemyDamage = battleResult1.DOTOutcome;
-                    battleInfo.DOTEnemyType = battleResult1.DOTTypeOutcome;
-                    battleInfo.turnBase = "Char2";
-                }
-                else
-                {
-                    Console.Write($"{CharacterToPlay[0].Name} is");
-                    ElementColors.ChangeElementColor(CharacterToPlay[1].Element);
-                    Console.Write($" slowed ");
-                    Console.ResetColor();
-                    Console.WriteLine("can't attack in current turn.\n");
-                    CharacterToPlay[0].Speed += 100;
-                }
-
-                while (keyPress.Key.Equals(ConsoleKey.Enter))
-                {
-                    keyPress = Console.ReadKey();
-                    break;
-                }
-
-                battleInfo.char1 = CharacterToPlay[1];
-                battleInfo.char2 = CharacterToPlay[0];
-
-                if (CharacterToPlay[1].Speed >= 100)
-                {
-                    BattleResult battleResult2 = Result(battleInfo);
-
-                    if (battleResult2.battleOutcome == "Battle End")
+                    if (CharacterToPlay[1].Speed >= 100)
                     {
-                        Console.WriteLine("\nThe end");
-                        break;
+                        if (keyPress.Key.Equals(ConsoleKey.Enter))
+                        {
+                            if (SkillChanceChar2 >= 2 && battleInfo.frozenflag2 == false)
+                            {
+
+                                string SkillUser = "";
+
+                                while (true)
+                                {
+                                    Console.Write($"{CharacterToPlay[1].Name} has 2 attack stacks. Use skill? Y or N: ");
+                                    SkillUser = Console.ReadLine();
+
+                                    if (SkillUser.ToLower() == "n" ||
+                                        SkillUser.ToLower() == "y")
+                                    {
+                                        SkillChanceChar2 = SkillUser.ToLower() == "y" ? 0 : 3;
+                                        SkillUseChar2 = SkillUser.ToLower() == "y" ? true : false;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        ClearLastLines(1);
+                                        Console.Write("Invalid. Please select again. ");
+                                        //Console.ReadLine();
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (SkillChanceChar2 >= 2)
+                            {
+                                SkillChanceChar2 = 0;
+                                SkillUseChar2 = true;
+                            }
+                        }
+
+                        BattleResult battleResult2 = Result(battleInfo);
+
+                        SkillChanceChar2 = SkillUseChar2 == true ? 0 : ++SkillChanceChar2;
+                        SkillUseChar2 = SkillUseChar2 == true ? false : false;
+
+                        if (battleResult2.battleOutcome == "Battle End")
+                        {
+                            Console.WriteLine("\nThe end");
+                            CharacterToPlay[0].Speed = 0;
+                            CharacterToPlay[1].Speed = 0;
+                            TheEnd = true;
+                            break;
+                        }
+
+                        battleInfo.frozenflag1 = battleResult2.frozenflagChar1Outcome;
+                        battleInfo.frozenflag2 = battleResult2.frozenflagChar2Outcome;
+                        battleInfo.prevFrozenflag1 = battleResult2.prevFrozenflagChar1Outcome;
+                        battleInfo.prevFrozenflag2 = battleResult2.prevFrozenflagChar2Outcome;
+                        battleInfo.DOTEnemyDamage = battleResult2.DOTOutcome;
+                        battleInfo.DOTEnemyType = battleResult2.DOTTypeOutcome;
+
+                        CharacterToPlay[0].Speed = CharacterToPlay[0].Speed - battleResult2.speedOutcome;
+                        CharacterToPlay[1].Speed = CharacterToPlay[1].Speed - 100;
+                        Console.Write("\n");
+
+                        if (CharacterToPlay[1].Speed < 100)
+                        {
+                            Char2TurnEnd = true;
+                        }
                     }
-
-                    CharacterToPlay[1].Speed = CharacterToPlay[1].Speed - 100 + OriginalChar2Speed;
-                    CharacterToPlay[0].Speed = CharacterToPlay[0].Speed - battleResult2.speedOutcome;
-
-                    battleInfo.frozenflag1 = battleResult2.frozenflagChar1Outcome;
-                    battleInfo.frozenflag2 = battleResult2.frozenflagChar2Outcome;
-                    battleInfo.prevFrozenflag1 = battleResult2.prevFrozenflagChar1Outcome;
-                    battleInfo.prevFrozenflag2 = battleResult2.prevFrozenflagChar2Outcome;
-                    battleInfo.DOTEnemyDamage = battleResult2.DOTOutcome;
-                    battleInfo.DOTEnemyType = battleResult2.DOTTypeOutcome;
-                    Console.Write("\n");
+                    else
+                    {
+                        if (Char2TurnEnd == false)
+                        {
+                            Console.Write($"{CharacterToPlay[1].Name} is");
+                            ElementColors.ChangeElementColor(CharacterToPlay[0].Element);
+                            Console.Write($" slowed ");
+                            Console.ResetColor();
+                            Console.WriteLine("can't attack in current turn.\n");
+                            Char2TurnEnd = true;
+                        }
+                    }
                 }
-                else
+
+                if (Char1TurnEnd && Char2TurnEnd)
                 {
-                    Console.Write($"{CharacterToPlay[1].Name} is");
-                    ElementColors.ChangeElementColor(CharacterToPlay[0].Element);
-                    Console.Write($" slowed ");
-                    Console.ResetColor();
-                    Console.WriteLine("can't attack in current turn.\n");
-                    CharacterToPlay[1].Speed += 100;
+                    CharacterToPlay[1].Speed = CharacterToPlay[1].Speed + OriginalChar2Speed;
+                    CharacterToPlay[0].Speed = CharacterToPlay[0].Speed + OriginalChar1Speed;
+                    Char1TurnEnd = false;
+                    Char2TurnEnd = false;
                 }
             }
         }
@@ -296,8 +418,10 @@ namespace Warriors
                         dOTTypeEnemy = "";
                     }
 
-                    if (battleInfo.char1 is ImaginaryCharacters ||
-                        battleInfo.char1 is QuantumCharacters)
+                    if ((battleInfo.char1 is ImaginaryCharacters ||
+                         battleInfo.char1 is QuantumCharacters) &&
+                        (battleInfo.turnBase == "Char1" && SkillUseChar1 == true) ||
+                        (battleInfo.turnBase == "Char2" && SkillUseChar2 == true))
                     {
                         if (battleInfo.char1.SlowAttack() == true)
                         {
@@ -333,7 +457,9 @@ namespace Warriors
                     battleInfo.frozenflag2 = false;
                 }
 
-                if (battleInfo.char1 is IceCharacter)
+                if ((battleInfo.char1 is IceCharacter) && 
+                    (battleInfo.turnBase == "Char1" && SkillUseChar1 == true) || 
+                    (battleInfo.turnBase == "Char2" && SkillUseChar2 == true))
                 {
                     if (battleInfo.char1.FreezeAttack() == true)
                     {
@@ -355,6 +481,23 @@ namespace Warriors
                     }
                 }
 
+                if (battleInfo.char1.Skill == "Heal")
+                {
+                    if ((battleInfo.turnBase == "Char1" && SkillUseChar1 == true) ||
+                        (battleInfo.turnBase == "Char2" && SkillUseChar2 == true))
+                    {
+                        if (Heal.HealSelf(battleInfo.char1.Chance) == true)
+                        {
+                            int HealValue = (int)(0.2 * battleInfo.char1.Health);
+                            Console.Write($"{battleInfo.char1.Name} ");
+                            Console.ForegroundColor = ConsoleColor.White; Console.Write("heals "); Console.ResetColor();
+                            Console.WriteLine($"{HealValue}");
+                            battleInfo.char1.Health = battleInfo.char1.Health + HealValue;
+                            Console.WriteLine($"{battleInfo.char1.Name}'s health is now {battleInfo.char1.Health}");
+                        }
+                    }
+                }
+
                 return new BattleResult
                 {
                     battleOutcome = "Battle continues",
@@ -367,6 +510,17 @@ namespace Warriors
                     speedOutcome = speed
                 };
             }
+        }
+
+        public static void ClearLastLines(int LineCount)
+        {
+            (int LeftCursor, int TopCursor) = Console.GetCursorPosition();
+            Console.SetCursorPosition(0, TopCursor - (LineCount));
+            for (int i = 0; i < (LineCount); i++)
+            {
+                Console.Write(new string(' ', Console.BufferWidth));
+            }
+            Console.SetCursorPosition(0, TopCursor - (LineCount));
         }
     }
 }
