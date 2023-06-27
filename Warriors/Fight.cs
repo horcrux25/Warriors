@@ -45,26 +45,28 @@ namespace Warriors
         //static bool Char1Slow = false;
         //static bool Char2Slow = false;
 
-        public static void Battle(Characters char1, Characters char2)
+        public static void Battle(Characters charOne, Characters charTwo)
         {
             Console.WriteLine("\nBattle start!\nPress ENTER to display every turn,\notherwise, press any key to end fight immediately.");
             Console.WriteLine("For auto-battle, skills will be casted automatically.\n");
 
-            List<Characters> CharacterToPlay = new List<Characters> { char1, char2 };
+            List<Characters> CharacterToPlay = new List<Characters> { charOne, charTwo };
 
             CharacterToPlay = CharacterToPlay.OrderByDescending(x => x.Speed).ToList();
-            double OriginalChar1Speed = char1.Speed;
-            double OriginalChar2Speed = char2.Speed;
+            double OriginalChar1Speed = charOne.Speed;
+            double OriginalChar2Speed = charTwo.Speed;
             int turnCounter = 1;
             ConsoleKeyInfo keyPress = Console.ReadKey();
             bool TheEnd = false;
             bool Char1TurnEnd = false;
             bool Char2TurnEnd = false;
+            string OrginialChar1Name = charOne.Name;
+            string OrginialChar2Name = charTwo.Name;
 
             BattleInfo battleInfo = new()
             {
-                char1 = char1,
-                char2 = char2,
+                char1 = charOne,
+                char2 = charTwo,
                 frozenflag1 = false,
                 frozenflag2 = false,
                 prevFrozenflag1 = false,
@@ -93,18 +95,32 @@ namespace Warriors
                 Console.WriteLine($"Turn {turnCounter}"); turnCounter++;
                 Console.ResetColor();
 
-                while (keyPress.Key.Equals(ConsoleKey.Enter))
-                {
-                    keyPress = Console.ReadKey();
-                    break;
-                }
-
                 while ((CharacterToPlay[0].Speed >= 100 ||
                         CharacterToPlay[1].Speed >= 100))
                 {
-                    battleInfo.char1 = CharacterToPlay[0];
-                    battleInfo.char2 = CharacterToPlay[1];
-                    battleInfo.turnBase = "Char1";
+
+                    while (keyPress.Key.Equals(ConsoleKey.Enter))
+                    {
+                        keyPress = Console.ReadKey();
+                        break;
+                    }
+
+                    CharacterToPlay = CharacterToPlay.OrderByDescending(x => x.Speed).ToList();
+                    //CharacterToPlay.ForEach(x => Console.WriteLine(x.Name + " " + x.Speed));
+
+                    if (CharacterToPlay[0].Name == charOne.Name)
+                    {
+                        battleInfo.char1 = charOne;
+                        battleInfo.char2 = charTwo;
+                        battleInfo.turnBase = "Char1";
+                    }
+                    else
+                    {
+                        battleInfo.char1 = charTwo;
+                        battleInfo.char2 = charOne;
+                        battleInfo.turnBase = "Char2";
+                    }
+                    
 
                     if (CharacterToPlay[0].Speed >= 100)
                     {
@@ -152,6 +168,8 @@ namespace Warriors
                             Console.WriteLine("\nThe end");
                             CharacterToPlay[0].Speed = 0;
                             CharacterToPlay[1].Speed = 0;
+                            SkillChanceChar1 = 0;
+                            SkillChanceChar2 = 0;
                             TheEnd = true;
                             break;
                         }
@@ -163,7 +181,7 @@ namespace Warriors
                         battleInfo.prevFrozenflag2 = battleResult1.prevFrozenflagChar2Outcome;
                         battleInfo.DOTEnemyDamage = battleResult1.DOTOutcome;
                         battleInfo.DOTEnemyType = battleResult1.DOTTypeOutcome;
-                        battleInfo.turnBase = "Char2";
+                        //battleInfo.turnBase = "Char2";
 
                         CharacterToPlay[1].Speed = CharacterToPlay[1].Speed - battleResult1.speedOutcome;
                         CharacterToPlay[0].Speed = CharacterToPlay[0].Speed - 100;
@@ -192,8 +210,18 @@ namespace Warriors
                         break;
                     }
 
-                    battleInfo.char1 = CharacterToPlay[1];
-                    battleInfo.char2 = CharacterToPlay[0];
+                    if (CharacterToPlay[0].Name == charOne.Name)
+                    {
+                        battleInfo.char1 = charTwo;
+                        battleInfo.char2 = charOne;
+                        battleInfo.turnBase = "Char2";
+                    }
+                    else
+                    {
+                        battleInfo.char1 = charOne;
+                        battleInfo.char2 = charTwo;
+                        battleInfo.turnBase = "Char1";
+                    }
 
                     if (CharacterToPlay[1].Speed >= 100)
                     {
@@ -244,6 +272,8 @@ namespace Warriors
                             Console.WriteLine("\nThe end");
                             CharacterToPlay[0].Speed = 0;
                             CharacterToPlay[1].Speed = 0;
+                            SkillChanceChar1 = 0;
+                            SkillChanceChar2 = 0;
                             TheEnd = true;
                             break;
                         }
@@ -278,10 +308,19 @@ namespace Warriors
                     }
                 }
 
+
                 if (Char1TurnEnd && Char2TurnEnd)
                 {
-                    CharacterToPlay[1].Speed = CharacterToPlay[1].Speed + OriginalChar2Speed;
-                    CharacterToPlay[0].Speed = CharacterToPlay[0].Speed + OriginalChar1Speed;
+                    if (CharacterToPlay[0].Name == charOne.Name)
+                    {
+                        CharacterToPlay[1].Speed = CharacterToPlay[1].Speed + OriginalChar2Speed;
+                        CharacterToPlay[0].Speed = CharacterToPlay[0].Speed + OriginalChar1Speed;
+                    }
+                    else
+                    {
+                        CharacterToPlay[0].Speed = CharacterToPlay[0].Speed + OriginalChar2Speed;
+                        CharacterToPlay[1].Speed = CharacterToPlay[1].Speed + OriginalChar1Speed;
+                    }
                     Char1TurnEnd = false;
                     Char2TurnEnd = false;
                 }
@@ -401,7 +440,9 @@ namespace Warriors
                 if ((battleInfo.frozenflag1 == false && string.Equals(battleInfo.turnBase, "Char1")) ||
                     (battleInfo.frozenflag2 == false && string.Equals(battleInfo.turnBase, "Char2")))
                 {
-                    if (battleInfo.char1.DOTAttack() == true)
+                    if ((battleInfo.char1.DOTAttack() == true) &&
+                       ((battleInfo.turnBase == "Char1" && SkillUseChar1 == true) ||
+                        (battleInfo.turnBase == "Char2" && SkillUseChar2 == true)))
                     {
                         dotDamage = battleInfo.char1.DamageOverTime();
                         dOTDamageEnemy = dotDamage.DotDamage;
@@ -488,7 +529,7 @@ namespace Warriors
                     {
                         if (Heal.HealSelf(battleInfo.char1.Chance) == true)
                         {
-                            int HealValue = (int)(0.2 * battleInfo.char1.Health);
+                            int HealValue = (int)(0.05 * battleInfo.char1.Health);
                             Console.Write($"{battleInfo.char1.Name} ");
                             Console.ForegroundColor = ConsoleColor.White; Console.Write("heals "); Console.ResetColor();
                             Console.WriteLine($"{HealValue}");

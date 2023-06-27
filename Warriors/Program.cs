@@ -22,10 +22,10 @@ internal class Program
             List<Characters> PlayersCopy = new();
 
             ImaginaryCharacters Yukong = new ImaginaryCharacters("Yukong", 1000, 150, 50, "Imaginary", 110, 65, "Slow");
-            IceCharacter March7th = new IceCharacter("March 7th", 1000, 150, 60, "Ice", 100, 50, "Freeze");
+            IceCharacter March7th = new IceCharacter("March 7th", 1000, 150, 60, "Ice", 100, 55, "Freeze");
             DOTCharacter DanHeng = new DOTCharacter("Dan Heng", 1000, 200, 45, "Wind", 100, 40, "Slow");
             DOTCharacter Hook = new DOTCharacter("Hook", 1000, 175, 50, "Fire", 100, 50, "Burn");
-            DOTCharacter Natasha = new DOTCharacter("Natasha", 1250, 100, 100, "Physical", 100, 40,"Heal");
+            DOTCharacter Natasha = new DOTCharacter("Natasha", 1200, 100, 100, "Physical", 100, 35,"Heal");
             DOTCharacter Serval = new DOTCharacter("Serval", 1000, 180, 45, "Lightning", 110, 40,"Shock");
             QuantumCharacters Qingque = new QuantumCharacters("Qingque", 1000, 150, 60, "Quantum", 120, 40,"Slow");
 
